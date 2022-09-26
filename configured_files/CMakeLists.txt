@@ -4,4 +4,5 @@
 # you are developing a library
 configure_file("config.hpp.in" "${CMAKE_BINARY_DIR}/configured_files/include/internal_use_only/config.hpp" ESCAPE_QUOTES)
 
-
+file(READ example.xml XML_INPUT)
+configure_file("xml_constexpr_string.hpp.in" "${CMAKE_BINARY_DIR}/configured_files/include/xml_constexpr_string.hpp" ESCAPE_QUOTES)

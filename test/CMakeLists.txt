@@ -57,6 +57,9 @@ catch_discover_tests(
 add_executable(constexpr_tests constexpr_tests.cpp)
 target_link_libraries(constexpr_tests PRIVATE myproject::project_options myproject::project_warnings catch_main)
 
+target_include_directories(constexpr_tests 
+PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
+
 catch_discover_tests(
   constexpr_tests
   TEST_PREFIX
