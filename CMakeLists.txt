@@ -33,7 +33,7 @@ include(${_project_options_SOURCE_DIR}/Index.cmake)
 
 # Set the project name and language
 project(
-  myproject
+  constexpr_xml
   VERSION 0.0.1
   DESCRIPTION ""
   HOMEPAGE_URL "%%myurl%%"
@@ -128,6 +128,9 @@ add_library(myproject::project_warnings INTERFACE IMPORTED)
 
 # configure files based on CMake configuration options
 add_subdirectory(configured_files)
+
+# Adding third party libraries
+add_subdirectory(third_party)
 
 # Adding the src:
 add_subdirectory(src)
