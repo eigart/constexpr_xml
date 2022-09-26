@@ -22,18 +22,9 @@ jobs:
     strategy:
       fail-fast: false
 
-      # Recommendations:
-      #   * support at least 2 operating systems
-      #   * support at least 2 compilers
-      #   * make sure all supported configurations for your project are built
-      #
-      # Disable/enable builds in this list to meet the above recommendations
-      # and your own projects needs
       matrix:
         os:
-          - ubuntu-20.04
-          - macos-10.15
-          - windows-2019
+          - ubuntu-22.04
         compiler:
           # you can specify the version after `-` like "llvm-13.0.0".
           - llvm-13.0.0
@@ -42,15 +33,10 @@ jobs:
           - "Ninja Multi-Config"
         build_type:
           - Release
-          - Debug
+          # - Debug
         developer_mode:
-          - ON
+          # - ON
           - OFF
-
-        exclude:
-          # mingw is determined by this author to be too buggy to support
-          - os: windows-2019
-            compiler: gcc-11
 
         include:
           # Add appropriate variables for gcov version required. This will intentionally break
@@ -66,39 +52,12 @@ jobs:
             package_generator: TBZ2
 
           # This exists solely to make sure a non-multiconfig build works
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             compiler: gcc-11
             generator: "Unix Makefiles"
-            build_type: Debug
+            build_type: Release
             gcov_executable: gcov
             developer_mode: On
-
-          # Windows msvc builds
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Debug
-            developer_mode: On
-
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Release
-            developer_mode: On
-
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Debug
-            developer_mode: Off
-
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Release
-            developer_mode: Off
-            package_generator: ZIP
-
 
     steps:
       - name: Check for llvm version mismatches
@@ -126,7 +85,7 @@ jobs:
 
           cmake: true
           ninja: true
-          conan: true
+          conan: 1.52
           vcpkg: false
           ccache: true
           clangtidy: ${{ env.CLANG_TIDY_VERSION }}
@@ -153,19 +112,12 @@ jobs:
           cmake --build ./build --config ${{matrix.build_type}}
 
       - name: Unix - Test and coverage
-        if: runner.os != 'Windows'
         working-directory: ./build
         # Execute tests defined by the CMake configuration.
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
         run: |
           ctest -C ${{matrix.build_type}}
           gcovr -j ${{env.nproc}} --delete --root ../ --print-summary --xml-pretty --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}'
-
-      - name: Windows - Test and coverage
-        if: runner.os == 'Windows'
-        working-directory: ./build
-        run: |
-          OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C ${{matrix.build_type}}
 
       - name: CPack
         if: matrix.package_generator != ''
@@ -180,10 +132,9 @@ jobs:
           files: |
             build/*-*${{ matrix.build_type }}*-*.*
 
-
-      - name: Publish to codecov
-        uses: codecov/codecov-action@v2
-        with:
-          flags: ${{ runner.os }}
-          name: ${{ runner.os }}-coverage
-          files: ./build/coverage.xml
+      # - name: Publish to codecov
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     flags: ${{ runner.os }}
+      #     name: ${{ runner.os }}-coverage
+      #     files: ./build/coverage.xml
