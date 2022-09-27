@@ -153,27 +153,27 @@ struct document
 };
 }// namespace production
 
-#ifndef LEXY_TEST
-int main(int argc, char **argv)
-{
-  if (argc < 2) {
-    std::fprintf(stderr, "usage: %s <filename>", argv[0]);
-    return 1;
-  }
+// #ifndef LEXY_TEST
+// int main(int argc, char **argv)
+// {
+//   if (argc < 2) {
+//     std::fprintf(stderr, "usage: %s <filename>", argv[0]);
+//     return 1;
+//   }
 
-  // We assume UTF-8 encoded input.
-  auto file = lexy::read_file<lexy::utf8_encoding>(argv[1]);
-  if (!file) {
-    std::fprintf(stderr, "file '%s' not found", argv[1]);
-    return 1;
-  }
+//   // We assume UTF-8 encoded input.
+//   auto file = lexy::read_file<lexy::utf8_encoding>(argv[1]);
+//   if (!file) {
+//     std::fprintf(stderr, "file '%s' not found", argv[1]);
+//     return 1;
+//   }
 
-  auto document = lexy::parse<grammar::document>(file.buffer(), lexy_ext::report_error.path(argv[1]));
-  if (!document) return 2;
+//   auto document = lexy::parse<grammar::document>(file.buffer(), lexy_ext::report_error.path(argv[1]));
+//   if (!document) return 2;
 
-  document.value()->print();
-}
-}
+//   document.value()->print();
+// }
+// }
 
 namespace production {
 struct attribute
@@ -187,5 +187,5 @@ struct attribute
   };
 }
 
-}
+}// namespace production
 #endif// PARSER_PRODUCTION_HPP

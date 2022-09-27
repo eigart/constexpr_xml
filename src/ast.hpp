@@ -3,6 +3,9 @@
 
 // Derivative work of lexy/example/xml.cpp
 
+#ifndef AST_HPP
+#define AST_HPP
+
 #include <cstdio>
 #include <memory>
 #include <string>
@@ -72,6 +75,24 @@ private:
   char _c;
 };
 
+class xml_attribute final : public xml_node
+{
+public:
+  explicit xml_attribute(std::string attribute_name, std::string value)
+    : _attribute_name(std::move(attribute_name)), _value(std::move(value))
+  {}
+
+  void print() const override
+  {
+    std::printf(" %s=", _attribute_name.c_str());
+    std::printf("\"%\"s>", _value.c_str());
+  }
+
+private:
+  std::string _attribute_name;
+  std::string _value;
+};
+
 class xml_cdata final : public xml_node
 {
 public:
@@ -100,5 +121,8 @@ public:
 private:
   std::string _tag;
   std::vector<xml_node_ptr> _children;
+  std::vector<xml_attribute_ptr> _attributes;
 };
 }// namespace ast
+
+#endif// AST_HPP
