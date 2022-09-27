@@ -60,6 +60,9 @@ target_link_libraries(constexpr_tests PRIVATE myproject::project_options myproje
 target_include_directories(constexpr_tests 
 PRIVATE "${CMAKE_BINARY_DIR}/configured_files/include")
 
+target_link_libraries(constexpr_tests
+  PRIVATE foonathan::lexy)
+
 catch_discover_tests(
   constexpr_tests
   TEST_PREFIX
