@@ -130,7 +130,8 @@ add_library(myproject::project_warnings INTERFACE IMPORTED)
 add_subdirectory(configured_files)
 
 # Adding third party libraries
-add_subdirectory(third_party)
+# TODO: Look into using conan
+add_subdirectory(fetched_content)
 
 # Adding the src:
 add_subdirectory(src)
@@ -139,7 +140,7 @@ add_subdirectory(src)
 option(ENABLE_TESTING "Enable the tests" ${PROJECT_IS_TOP_LEVEL})
 if(ENABLE_TESTING)
   enable_testing()
-  message(AUTHOR_WARNING "Building Tests. Be sure to check out test/constexpr_tests.cpp for constexpr testing")
+  # message(AUTHOR_WARNING "Building Tests. Be sure to check out test/constexpr_tests.cpp for constexpr testing")
   add_subdirectory(test)
 endif()
 

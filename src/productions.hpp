@@ -6,11 +6,15 @@
 #ifndef PARSER_PRODUCTION_HPP
 #define PARSER_PRODUCTION_HPP
 
+#include "ast.hpp"
+
 #include <lexy/callback.hpp>
 #include <lexy/dsl.hpp>
+
+
 namespace dsl = lexy::dsl;
 
-namespace production {
+namespace productions {
 // The grammar of (a subset of) XML.
 // It does not support attributes, the XML prolog, doctype, or processing instructions.
 // It also only supports the pre-defined entity references.
@@ -151,8 +155,17 @@ struct document
   }();
   static constexpr auto value = lexy::forward<ast::xml_node_ptr>;
 };
-}// namespace production
+}// namespace productions
 
+
+namespace productions {
+struct number
+{
+  static constexpr auto rule = dsl::integer<int>(dsl::n_digits<3>);
+  static constexpr auto value = lexy::forward<int>;
+};
+
+}// namespace productions
 // #ifndef LEXY_TEST
 // int main(int argc, char **argv)
 // {
@@ -175,17 +188,13 @@ struct document
 // }
 // }
 
-namespace production {
-struct attribute
-{
-  static constexpr auto rule = [] {
+// namespace production {
+// struct attribute
+// {
+//   static constexpr auto rule = [] {return 0;}();
 
-  }();
+//   static constexpr auto value = [] {return 0;};
+// };
 
-  static constexpr auto value = [] {
-
-  };
-}
-
-}// namespace production
+// }// namespace production
 #endif// PARSER_PRODUCTION_HPP
