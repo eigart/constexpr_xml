@@ -9,150 +9,76 @@
 #define AST_HPP
 
 #include <cstdio>
-#include <memory>
 #include <string>
+#include <string_view>
+#include <type_traits>
+#include <variant>
 #include <vector>
 
 namespace ast {
-class xml_node
-{
-public:
-  xml_node(const xml_node &) = delete;
-  xml_node &operator=(const xml_node &) = delete;
-  virtual ~xml_node() = default;
 
-  virtual void print() const = 0;
-
-protected:
-  xml_node() = default;
-};
-
-using xml_node_ptr = std::unique_ptr<xml_node>;
-
-class xml_text final : public xml_node
+class xml_text
 {
 public:
   explicit xml_text(std::string text) : _text(std::move(text)) {}
-
-  void print() const override { std::fputs(_text.c_str(), stdout); }
-  friend std::ostream &operator<<(std::ostream &os, const xml_text &node) { return os << node._text; }
+  constexpr std::string_view to_sv() const { return _text; }
 
 private:
   std::string _text;
 };
 
-class xml_reference final : public xml_node
+class xml_reference
 {
 public:
   explicit xml_reference(char c) : _c(c) {}
-
-  void print() const override
-  {
-    switch (_c) {
-    case '"':
-      std::fputs("&quot;", stdout);
-      break;
-    case '&':
-      std::fputs("&amp;", stdout);
-      break;
-    case '\'':
-      std::fputs("&apos;", stdout);
-      break;
-    case '<':
-      std::fputs("&lt;", stdout);
-      break;
-    case '>':
-      std::fputs("&gt;", stdout);
-      break;
-    }
-  }
-
-  friend std::ostream &operator<<(std::ostream &os, const xml_reference &node)
-  {
-    switch (node._c) {
-    case '"':
-      return os << "&quot;";
-      break;
-    case '&':
-      return os << "&amp;";
-      break;
-    case '\'':
-      return os << "&apos;";
-      break;
-    case '<':
-      return os << "&lt;";
-      break;
-    case '>':
-      return os << "&gt;";
-      break;
-    }
-    return os;
-  }
+  constexpr std::string_view to_sv() const { return "ref"sv; }
 
 private:
   char _c;
 };
 
 // TODO: Implement attributes in a separate header just in case (licensing, updates etc.)
-// class xml_attribute final : public xml_node
+// class xml_attribute
 // {
 // public:
 //   explicit xml_attribute(std::string attribute_name, std::string value)
 //     : _attribute_name(std::move(attribute_name)), _value(std::move(value))
 //   {}
 
-//   void print() const override
-//   {
-//     std::printf(" %s=", _attribute_name.c_str());
-//     std::printf("\"%s\"s>", _value.c_str());
-//   }
-
 // private:
 //   std::string _attribute_name;
 //   std::string _value;
 // };
 
-// using xml_attribute_ptr = std::unique_ptr<xml_attribute>;
-
-class xml_cdata final : public xml_node
+class xml_cdata
 {
 public:
   explicit xml_cdata(std::string text) : _text(std::move(text)) {}
-
-  void print() const override { std::printf("<![CDATA[%s]]>", _text.c_str()); }
-  friend std::ostream &operator<<(std::ostream &os, const xml_cdata &node)
-  {
-    return os << "<![CDATA[" << node._text << "]]>";
-  }
+  constexpr std::string_view to_sv() const { return _text; }
 
 private:
   std::string _text;
 };
 
-class xml_element final : public xml_node
+class xml_element;
+using xml_variant = std::variant<xml_element, xml_cdata, xml_reference, xml_text>;
+
+class xml_element
 {
 public:
-  explicit xml_element(std::string tag, std::vector<xml_node_ptr> &&children = {})
+  explicit xml_element(std::string tag, std::vector<xml_variant> &&children = {})
     : _tag(std::move(tag)), _children(std::move(children))
   {}
 
-  void print() const override
-  {
-    std::printf("<%s>", _tag.c_str());
-    for (auto &child : _children) child->print();
-    std::printf("</%s>", _tag.c_str());
-  }
-
-  friend std::ostream &operator<<(std::ostream &os, const xml_element &node)
-  {
-    for (auto &child : node._children) os << child;
-    return os;
-  }
+  constexpr std::string_view to_sv() const { return _tag; }
+  std::vector<xml_variant>::const_iterator begin() const { return _children.begin(); }
+  std::vector<xml_variant>::const_iterator end() const { return _children.end(); }
 
 private:
   std::string _tag;
-  std::vector<xml_node_ptr> _children;
+  std::vector<xml_variant> _children;
 };
+
 }// namespace ast
 
 #endif// AST_HPP

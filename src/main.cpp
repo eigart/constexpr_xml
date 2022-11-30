@@ -6,7 +6,6 @@
 #include <spdlog/spdlog.h>
 
 #include <CLI/CLI.hpp>
-#include <fmt/ostream.h>
 
 // cmake configured files
 #include <internal_use_only/config.hpp>
@@ -20,17 +19,44 @@
 
 #include "productions.hpp"
 
+
+void print_xml_variant(const ast::xml_variant &var)
+{
+  std::visit(
+    [](auto &&arg) {
+      using T = std::decay_t<decltype(arg)>;
+      if constexpr (std::is_same_v<T, ast::xml_element>) {
+        fmt::print("<{0}>", arg.to_sv());
+        for (auto &&var : arg) { print_xml_variant(var); }
+        fmt::print("<{0}>", arg.to_sv());
+      } else if constexpr (std::is_same_v<T, ast::xml_text>) {
+        fmt::print("<{0}>", arg.to_sv());
+        // return arg.to_sv();
+      } else if constexpr (std::is_same_v<T, ast::xml_cdata>) {
+        puts("cdata");
+      } else if constexpr (std::is_same_v<T, ast::xml_reference>) {
+        fmt::print("<{0}>", arg.to_sv());
+      } else {
+        puts("nothing");
+      }
+    },
+    var);
+}
+
+
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int /*argc*/, const char ** /*argv*/)
 {
   auto input = lexy::string_input<lexy::ascii_encoding>(cxml::get_xml_input());
   auto result = lexy::parse<productions::document>(input, lexy_ext::report_error);
 
-  // auto input = lexy::string_input<lexy::ascii_encoding>(cxml::get_xml_input());
-  // auto result = lexy::parse<productions::number>(input, lexy::collect(lexy::callback<void>([](auto, auto) {})));
+  // auto input = lexy::string_input<lexy::ascii_encoding>(cxml::get_digit_input());
+  // auto result = lexy::parse<productions::number_variant>(input, lexy::collect(lexy::callback<void>([](auto, auto)
+  // {})));
   if (result.has_value()) {
-    result.value()->print();
-    fmt::print("\n{}\n", result.value());
+    // fmt::print("\n{}\n", result.value());
+    // fmt::print("\n{}\n", std::get<0>(result.value()));
+    print_xml_variant(result.value());
     fmt::print("Success!\n");
     return 0;
   } else {

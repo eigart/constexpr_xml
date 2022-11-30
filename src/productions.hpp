@@ -45,7 +45,7 @@ struct text
     auto char_ = (dsl::code_point - dsl::lit_c<'<'> - dsl::lit_c<'&'>).error<invalid_character>;
     return dsl::identifier(char_);
   }();
-  static constexpr auto value = lexy::as_string<std::string> | lexy::new_<ast::xml_text, ast::xml_node_ptr>;
+  static constexpr auto value = lexy::as_string<std::string> | lexy::construct<ast::xml_text>;
 };
 
 // The name of a tag or entity.
@@ -79,7 +79,7 @@ struct reference
     auto reference = dsl::symbol<entities>(name).error<unknown_entity>;
     return dsl::lit_c<'&'> >> reference + dsl::lit_c<';'>;
   }();
-  static constexpr auto value = lexy::new_<ast::xml_reference, ast::xml_node_ptr>;
+  static constexpr auto value = lexy::construct<ast::xml_reference>;
 };
 
 // A CDATA section.
@@ -92,7 +92,7 @@ struct cdata
   }();
 
   // We build a string; then we construct a node from it.
-  static constexpr auto value = lexy::as_string<std::string> >> lexy::new_<ast::xml_cdata, ast::xml_node_ptr>;
+  static constexpr auto value = lexy::as_string<std::string> >> lexy::construct<ast::xml_cdata>;
 };
 
 // A tagged XML element.
@@ -134,13 +134,12 @@ struct element
   }();
 
   // We collect the children as vector; then we construct a node from it.
-  static constexpr auto value = lexy::as_list<std::vector<ast::xml_node_ptr>> >> lexy::callback<ast::xml_node_ptr>(
+  static constexpr auto value = lexy::as_list<std::vector<ast::xml_variant>> >> lexy::callback<ast::xml_element>(
                                   [](auto name, lexy::nullopt = {}) {
-                                    return std::make_unique<ast::xml_element>(lexy::as_string<std::string>(name));
+                                    return ast::xml_element(lexy::as_string<std::string>(name));
                                   },
                                   [](auto name, auto &&children) {
-                                    return std::make_unique<ast::xml_element>(
-                                      lexy::as_string<std::string>(name), LEXY_MOV(children));
+                                    return ast::xml_element(lexy::as_string<std::string>(name), LEXY_MOV(children));
                                   });
 };
 
@@ -153,16 +152,23 @@ struct document
     auto ws_comment = ws | dsl::inline_<comment>;
     return ws_comment + dsl::p<element> + ws_comment + dsl::eof;
   }();
-  static constexpr auto value = lexy::forward<ast::xml_node_ptr>;
+  static constexpr auto value = lexy::forward<ast::xml_element>;
 };
 }// namespace productions
-
 
 namespace productions {
 struct number
 {
   static constexpr auto rule = dsl::integer<int>(dsl::n_digits<3>);
   static constexpr auto value = lexy::forward<int>;
+};
+
+using num_var = std::variant<int, float>;
+
+struct number_variant
+{
+  static constexpr auto rule = dsl::integer<int>(dsl::n_digits<3>);
+  static constexpr auto value = lexy::forward<num_var>;
 };
 
 }// namespace productions

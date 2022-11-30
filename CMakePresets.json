@@ -179,6 +179,20 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
+        },
+        {
+            "name": "dev",
+            "displayName": "Clang 12.0.0 x86_64-pc-linux-gnu",
+            "description": "Using compilers: C = /usr/bin/clang-12, CXX = /usr/bin/clang++-12",
+            "inherits": "conf-unixlike-common",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "clang-12",
+                "CMAKE_CXX_COMPILER": "clang++-12",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ENABLE_DEVELOPER_MODE": "OFF",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
         }
     ],
     "testPresets": [
